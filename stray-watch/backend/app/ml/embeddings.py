@@ -1,23 +1,23 @@
 import numpy as np
-from PIL import Image
-from tensorflow.keras.applications import MobileNetV2
-from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
-from tensorflow.keras.models import Model
 
-# ── Load MobileNetV2 once when the server starts ──────────────────────────────
-# include_top=False  → removes the final classification layer
-# pooling='avg'      → flattens output into a single 1280-dim vector
-# weights='imagenet' → uses pre-trained weights, no training needed from us
-base_model = MobileNetV2(
-    weights='imagenet',
-    include_top=False,
-    input_shape=(224, 224, 3),
-    pooling='avg'
-)
-embedding_model = Model(inputs=base_model.input, outputs=base_model.output)
+try:
+    from PIL import Image
+    from tensorflow.keras.applications import MobileNetV2
+    from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
+    from tensorflow.keras.models import Model
 
-print("MobileNetV2 loaded successfully.")
-
+    base_model = MobileNetV2(
+        weights='imagenet',
+        include_top=False,
+        input_shape=(224, 224, 3),
+        pooling='avg'
+    )
+    embedding_model = Model(inputs=base_model.input, outputs=base_model.output)
+    TF_AVAILABLE = True
+    print("MobileNetV2 loaded successfully.")
+except ImportError:
+    TF_AVAILABLE = False
+    print("TensorFlow not available — AI identification disabled.")
 
 def load_and_preprocess(image_path: str) -> np.ndarray:
     """
@@ -34,15 +34,11 @@ def load_and_preprocess(image_path: str) -> np.ndarray:
 
 
 def get_embedding(image_path: str) -> list:
-    """
-    Takes a path to a dog photo.
-    Returns a list of 1280 numbers (the embedding vector).
-    This vector is a numerical "fingerprint" of the dog's appearance.
-    We store this in the database when a dog is registered.
-    """
+    if not TF_AVAILABLE:
+        raise RuntimeError("TensorFlow not installed on this server.")
     img_array = load_and_preprocess(image_path)
-    vector = embedding_model.predict(img_array, verbose=0)[0]  # shape (1280,)
-    return vector.tolist()  # convert numpy array to plain Python list for JSON storage
+    vector = embedding_model.predict(img_array, verbose=0)[0]
+    return vector.tolist()
 
 
 def cosine_similarity(a: list, b: list) -> float:
