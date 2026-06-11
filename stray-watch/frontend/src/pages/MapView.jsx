@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
 import axios from 'axios'
 import 'leaflet/dist/leaflet.css'
 
-const API = 'http://localhost:8000'
+const API = 'https://stray-watch-api.onrender.com'
 
 function riskColor(score) {
   if (score >= 70) return '#ef4444'

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 
-const API = 'http://localhost:8000'
+const API = 'https://stray-watch-api.onrender.com'
 
 export default function RegisterDog() {
   const [localities, setLocalities] = useState([])
